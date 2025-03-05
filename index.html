@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- This file is intended to be built using the instructions here: http://highlightjs.readthedocs.io/en/latest/building-testing.html#building -->
+
+<head>
+  <meta charset="utf-8">
+  <title>highlight.js demo</title>
+
+  <script type="text/javascript" src='js/jquery-3.6.0.min.js'></script>
+  <script type="text/javascript" src='js/jquery.cookies.2.2.0.min.js'></script>
+  <link rel="stylesheet" href='css/bootstrap.min.css' />
+  <script src='js/bootstrap.min.js'></script>
+
+  <link id="css" rel="stylesheet" type="text/css" href="css/shCoreDefault.css" />
+  <script type="text/javascript" src="js/XRegExp.js"></script>
+  <script type="text/javascript" src="js/shCore.js"></script>
+  <script type="text/javascript" src="js/shBrushAll.js"></script>
+  <script src="js/clipboard.min.js"></script>
+  <style>
+    body {
+      font-size: 1rem;
+      font-family: Consolas, "Microsoft YaHei UI" !important;
+    }
+
+    .syntaxhighlighter a,
+    .syntaxhighlighter div,
+    .syntaxhighlighter code,
+    .syntaxhighlighter table,
+    .syntaxhighlighter table td,
+    .syntaxhighlighter table tr,
+    .syntaxhighlighter table tbody,
+    .syntaxhighlighter table thead,
+    .syntaxhighlighter table caption,
+    .syntaxhighlighter textarea {
+      font-family: Consolas, "Microsoft YaHei UI" !important;
+    }
+
+    .syntaxhighlighter .line.alt2, .syntaxhighlighter .line.alt1{
+        background-color: transparent !important;
+    }
+
+    textarea {
+      border: 1px solid #e1e1e8;
+      display: block;
+      margin: 9px 0;
+      white-space: pre;
+      border-radius: 5px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      word-break: break-all;
+      white-space: pre-wrap !important;
+      overflow: auto;
+      max-width: 720px;
+      min-width: 720px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    #result_div {
+      border: 1px solid #e1e1e8;
+      display: block;
+      margin: 9px 0;
+      border-radius: 5px;
+      -webkit-border-radius: 5px;
+      -moz-border-radius: 5px;
+      overflow: auto;
+      max-width: 728px;
+      min-width: 728px;
+      font-size: 1rem;
+      color: #333;
+    }
+
+    .code {
+      word-break: break-all;
+    }
+
+    ::-webkit-scrollbar-track {
+      opacity: 0
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background-color: #484848a3;
+      opacity: 30%;
+      border-radius: 5px;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="">
+    <span>语言</span>
+    <select id="code_type" class="span2">
+      <!-- 启动后加载 -->
+    </select>
+    <span>风格</span>
+    <select id="style_type" class="span2">
+      <option value="default">default</option>
+      <option value="emacs">emacs</option>
+      <option value="eclipse">eclipse</option>
+      <option value="django">django</option>
+      <option value="fadetogrey">fadetogrey</option>
+      <option value="mdultra">mdultra</option>
+      <option value="midnight">midnight</option>
+      <option value="rdark">rdark</option>
+    </select>
+    
+    <span><label class="checkbox"><input type="checkbox" id="transparentBg" />透明背景</label></span>
+    
+    <!-- <span><label class="checkbox"><input type="checkbox" id="gutter" checked="checked" />显示行号</label></span> -->
+    <button onclick="render();">处理</button>
+    <button id="copycode"
+      data-clipboard-target=".syntaxhighlighter > table > tbody > tr > td.code > .container"><span>复制代码</span></button>
+    <textarea id="code_source"
+      style="font-family:'Ubunto Mono', Consolas;margin:15px;max-height: 10rem;min-height: 10rem;max-width: 720px;min-width: 720px;">select * from dual;</textarea>
+    <div id="result_div" class="" style="margin:15px;max-height: 340px;">
+    </div>
+    <script>
+      // 参考这个网站 https://tool.oschina.net/highlight
+      var cookieOptions = {
+        hoursToLive: 30 * 24
+      };
+
+      // 处理透明背景
+      var transparentBgStyle = document.createElement('style');
+      transparentBgStyle.id = 'transparent-bg-style';
+      document.head.appendChild(transparentBgStyle);
+
+      function updateTransparentBg(enable) {
+          if (enable) {
+              transparentBgStyle.innerHTML = `
+                  body { background-color: transparent !important; }
+                  .syntaxhighlighter,
+                  .syntaxhighlighter .line.alt2, 
+                  .syntaxhighlighter .line.alt1 {
+                      background-color: transparent !important;
+                  }`;
+          } else {
+              transparentBgStyle.innerHTML = '';
+          }
+      }
+
+
+      // 语言选项 名称和值
+      var codeStyleMapping = [
+        {
+          "name": "actionscript3",
+          "value": "as3",
+          "list": [
+            "actionscript3",
+            "as3"
+          ]
+        },
+        {
+          "name": "applescript",
+          "value": "applescript",
+          "list": [
+            "applescript"
+          ]
+        },
+        {
+          "name": "bash/shell",
+          "value": "bash",
+          "list": [
+            "bash",
+            "shell"
+          ]
+        },
+        {
+          "name": "coldfusion",
+          "value": "cf",
+          "list": [
+            "coldfusion",
+            "cf"
+          ]
+        },
+        {
+          "name": "c/cpp",
+          "value": "cpp",
+          "list": ["cpp", "c"]
+        },
+        {
+          "name": "css",
+          "value": "css",
+          "list": ["css"]
+
+        },
+        {
+          "name": "delphi",
+          "value": "pas",
+          "list": ["delphi", "pascal", "pas"]
+        },
+        {
+          "name": "diff",
+          "value": "diff",
+          "list": ["diff", "patch"]
+        },
+        {
+          "name": "erlang",
+          "value": "erl",
+          "list": ["erl", "erlang"]
+        },
+        {
+          "name": "groovy",
+          "value": "groovy",
+          "list": ["groovy"]
+        },
+        {
+          "name": "java",
+          "value": "java",
+          "list": ["java"]
+        },
+        {
+          "name": "javafx",
+          "value": "jfx",
+          "list": ["jfx", "javafx"]
+        },
+        {
+          "name": "javascript/json",
+          "value": "js",
+          "list": ["js", "json", "jscript", "javascript"]
+        },
+        {
+          "name": "perl",
+          "value": "pl",
+          "list": ["perl", "Perl", "pl"]
+        },
+        {
+          "name": "php",
+          "value": "php",
+          "list": ["php"]
+        },
+        {
+          "name": "text",
+          "value": "text",
+          "list": ["text", "plain", "plaintext"]
+        },
+        {
+          "name": "powershell",
+          "value": "ps",
+          "list": ["powershell", "ps"]
+        },
+        {
+          "name": "python",
+          "value": "py",
+          "list": ["py", "python"]
+        },
+        {
+          "name": "ruby",
+          "value": "ruby",
+          "list": ["ruby", "rails", "ror", "rb", "r"]
+        },
+        {
+          "name": "scss",
+          "value": "scss",
+          "list": ["sass", "scss"]
+        },
+        {
+          "name": "scala",
+          "value": "scala",
+          "list": ["scala"]
+        },
+        {
+          "name": "vb",
+          "value": "vb",
+          "list": ["vb", "vbnet"]
+        },
+        {
+          "name": "xml/xhtml/html/xslt",
+          "value": "xml",
+          "list": ["xml", "xhtml", "xslt", "html"]
+        },
+        {
+          "name": "sql",
+          "value": "sql",
+          "list": ["sql"]
+        },
+      ];
+
+      var clipboard = new ClipboardJS('#copycode');
+
+      $(document).ready(function () {
+
+        // 不能用这个方法，否则点击调用clipboard复制时，复制不成功
+        // document.body.oncopy = function () {
+        //   document.getElementById('copycode').click();
+        // }
+
+          //  监听 ctrl + c事件
+          $(document).unbind('keydown').bind('keydown', function (e) {
+            if (e.ctrlKey && e.keyCode == 67) {
+              document.getElementById('copycode').click();
+              // 返回false, 防止重复触发copy事件
+              return false;
+            }
+          });
+
+        var code_type = document.getElementById('code_type');
+        //添加一个选项
+        for (var i = 0; i < codeStyleMapping.length; i++) {
+          code_type.options.add(new Option(codeStyleMapping[i].name, codeStyleMapping[i].value));
+        }
+        if (jQuery.cookies.get("lang_type")) {
+          $("#code_type").val(jQuery.cookies.get("lang_type"));
+        }
+        if (jQuery.cookies.get("style_type")) {
+          $("#style_type").val(jQuery.cookies.get("style_type"));
+        }
+        
+        $("#transparentBg").prop('checked', jQuery.cookies.get("transparentBg") === "true").change(function() {
+            updateTransparentBg(this.checked);
+            jQuery.cookies.set("transparentBg", this.checked, cookieOptions);
+            render();
+        });
+        
+        updateTransparentBg(jQuery.cookies.get("transparentBg") === "true");
+        
+        SyntaxHighlighter.all();
+        // $("#gutter").click(function () {
+        //   render();
+        // });
+        // $('#gutter').cookieBind();
+        render();
+      });
+
+      $("#code_type").click(function () {
+        render();
+      });
+      $("#style_type").click(function () {
+        change($(this).val());
+      });
+
+      var REGX_HTML_ENCODE = /"|&|'|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g;
+
+      function encodeHtml(s) {
+        return (typeof s != "string") ? s :
+          s.replace(REGX_HTML_ENCODE,
+            function ($0) {
+              var c = $0.charCodeAt(0), r = ["&#"];
+              c = (c == 0x20) ? 0xA0 : c;
+              r.push(c); r.push(";");
+              return r.join("");
+            });
+      }
+
+      function changeCode(str, codeStyle) {
+        $("#code_source").html(str);
+        if (codeStyle != undefined && codeStyle != null) {
+          changeLanguage(codeStyle);
+        }
+        render();
+      }
+
+      function changeLanguage(str) {
+        for (var i = 0; i < codeStyleMapping.length; i++) {
+          if (codeStyleMapping[i].list.includes(str)) {
+            $("#code_type").val(codeStyleMapping[i].value);
+            return;
+          }
+        }
+        $("#code_type").val('text');
+      }
+      function change(type) {    //更改样式
+        var css = document.getElementById("css");
+        if ("default" == type)
+          css.setAttribute("href", "css/shCoreDefault.css");
+        if ("emacs" == type)
+          css.setAttribute("href", "css/shCoreEmacs.css");
+        if ("django" == type)
+          css.setAttribute("href", "css/shCoreDjango.css");
+        if ("eclipse" == type)
+          css.setAttribute("href", "css/shCoreEclipse.css");
+        if ("fadetogrey" == type)
+          css.setAttribute("href", "css/shCoreFadeToGrey.css");
+        if ("mdultra" == type)
+          css.setAttribute("href", "css/shCoreMDUltra.css");
+        if ("midnight" == type)
+          css.setAttribute("href", "css/shCoreMidnight.css");
+        if ("rdark" == type)
+          css.setAttribute("href", "css/shCoreRDark.css");
+        render();
+      }
+
+      clipboard.on('success', function (e) {
+        var btnChild = document.querySelector("#copycode > span");
+        var btnChildText = btnChild.innerText;
+
+        btnChild.innerText = "复制成功";
+        btnChild.style = "color:green"
+        setTimeout(() => {
+          btnChild.style = "";
+          btnChild.innerText = "点击复制";
+        }, 1000);
+        e.clearSelection();
+      });
+
+      clipboard.on('error', function (e) {
+        console.error('复制失败', e);
+        console.error('Action:', e.action);
+        console.error('Trigger:', e.trigger);
+      });
+
+      function render() {
+        $("#result_div").empty();
+        $("#result_div").prepend("<pre>" + encodeHtml($("#code_source").val()) + "</pre>");
+        var class_v = "brush :" + $("#code_type").val() + ";";
+        // if ("checked" != $("#gutter").attr("checked"))
+        class_v = class_v + "gutter: true;";
+        $("#result_div pre").addClass(class_v);
+        SyntaxHighlighter.highlight();
+        jQuery.cookies.set("lang_type", $('#code_type').val(), cookieOptions);
+        jQuery.cookies.set("style_type", $('#style_type').val(), cookieOptions);
+        $('.code .line').each(function (index) {
+          var yqhg = new Number($(this).height());
+          $('.gutter .line:eq(' + index + ')').attr('style', 'height:' + yqhg + 'px !important')
+        });
+      }
+
+    </script>
+</body>
+
+</html>
