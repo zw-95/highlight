@@ -173,7 +173,7 @@
   background: none !important;
 }
 .syntaxhighlighter.printing .line .number {
-  color: #bbbbbb !important;
+  color: #1B4FEA !important;
 }
 .syntaxhighlighter.printing .line .content {
   color: black !important;
@@ -191,11 +191,11 @@
   color: #008200 !important;
 }
 .syntaxhighlighter.printing .string, .syntaxhighlighter.printing .string a {
-  color: blue !important;
+  color: #008200 !important;
 }
 .syntaxhighlighter.printing .keyword {
-  color: #006699 !important;
-  font-weight: bold !important;
+  color: #0031B4 !important;
+  /* font-weight: bold !important; */
 }
 .syntaxhighlighter.printing .preprocessor {
   color: gray !important;
@@ -241,8 +241,9 @@
   background-color: #e0e0e0 !important;
 }
 .syntaxhighlighter .line.highlighted.number {
-  color: black !important;
+  color: #1B4FEA !important;
 }
+
 .syntaxhighlighter table caption {
   color: black !important;
 }
@@ -288,16 +289,16 @@
   color: black !important;
 }
 .syntaxhighlighter .comments, .syntaxhighlighter .comments a {
-  color: #008200 !important;
+  color: #067D17 !important;
 }
 .syntaxhighlighter .string, .syntaxhighlighter .string a {
-  color: blue !important;
+  color: #067D17 !important;
 }
 .syntaxhighlighter .keyword {
-  color: #006699 !important;
+  color: #0031B4 !important;
 }
 .syntaxhighlighter .preprocessor {
-  color: gray !important;
+  color: #0031B4 !important;
 }
 .syntaxhighlighter .variable {
   color: #aa7700 !important;
@@ -306,10 +307,13 @@
   color: #009900 !important;
 }
 .syntaxhighlighter .functions {
-  color: #ff1493 !important;
+  color: #9355FF !important;
 }
 .syntaxhighlighter .constants {
-  color: #0066cc !important;
+  color: #860F95 !important;
+}
+.syntaxhighlighter .number {
+  color: #ff1493 !important;
 }
 .syntaxhighlighter .script {
   font-weight: bold !important;
@@ -317,7 +321,7 @@
   background-color: none !important;
 }
 .syntaxhighlighter .color1, .syntaxhighlighter .color1 a {
-  color: gray !important;
+  color: #0031B4 !important;
 }
 .syntaxhighlighter .color2, .syntaxhighlighter .color2 a {
   color: #ff1493 !important;
@@ -327,6 +331,6 @@
 }
 
 .syntaxhighlighter .keyword {
-  font-weight: bold !important;
+  /* font-weight: bold !important; */
 }
 .syntaxhighlighter table {margin: 1px 0 !important;}

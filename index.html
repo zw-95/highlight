@@ -19,26 +19,19 @@
   <style>
     body {
       font-size: 1rem;
-      font-family: Consolas, "Microsoft YaHei UI" !important;
-    }
-
-    .syntaxhighlighter a,
-    .syntaxhighlighter div,
-    .syntaxhighlighter code,
-    .syntaxhighlighter table,
-    .syntaxhighlighter table td,
-    .syntaxhighlighter table tr,
-    .syntaxhighlighter table tbody,
-    .syntaxhighlighter table thead,
-    .syntaxhighlighter table caption,
-    .syntaxhighlighter textarea {
-      font-family: Consolas, "Microsoft YaHei UI" !important;
+      font-family: system-ui, 'Microsoft YaHei UI';
     }
 
     .syntaxhighlighter .line.alt2, .syntaxhighlighter .line.alt1{
-        background-color: transparent !important;
+      background-color: transparent !important;
     }
-
+    .condtions{
+      display: flex;
+      padding: 5px;
+    }
+    .condtions > *{
+      padding: 5px;
+    }
     textarea {
       border: 1px solid #e1e1e8;
       display: block;
@@ -93,30 +86,42 @@
 
 <body>
   <div class="">
-    <span>语言</span>
-    <select id="code_type" class="span2">
-      <!-- 启动后加载 -->
-    </select>
-    <span>风格</span>
-    <select id="style_type" class="span2">
-      <option value="default">default</option>
-      <option value="emacs">emacs</option>
-      <option value="eclipse">eclipse</option>
-      <option value="django">django</option>
-      <option value="fadetogrey">fadetogrey</option>
-      <option value="mdultra">mdultra</option>
-      <option value="midnight">midnight</option>
-      <option value="rdark">rdark</option>
-    </select>
-    
-    <span><label class="checkbox"><input type="checkbox" id="transparentBg" />透明背景</label></span>
-    
-    <!-- <span><label class="checkbox"><input type="checkbox" id="gutter" checked="checked" />显示行号</label></span> -->
-    <button onclick="render();">处理</button>
-    <button id="copycode"
-      data-clipboard-target=".syntaxhighlighter > table > tbody > tr > td.code > .container"><span>复制代码</span></button>
+    <div class="condtions">
+      <span>语言</span>
+      <select id="code_type" class="span2">
+        <!-- 启动后加载 -->
+      </select>
+      <span>风格</span>
+      <select id="style_type" class="span2">
+        <option value="default">default</option>
+        <option value="emacs">emacs</option>
+        <option value="eclipse">eclipse</option>
+        <option value="django">django</option>
+        <option value="fadetogrey">fadetogrey</option>
+        <option value="mdultra">mdultra</option>
+        <option value="midnight">midnight</option>
+        <option value="rdark">rdark</option>
+      </select>
+      <span>字体</span>
+      <select id="font_type" class="span2">
+        <option value="Courier New">Courier New</option>
+        <option value="Consolas">Consolas</option>
+        <option value="Tahoma">Tahoma</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Calibri">Calibri</option>
+        <option value="宋体">宋体</option>
+        <option value="微软雅黑">微软雅黑</option>
+        <option value="system-ui">system-ui</option>
+      </select>
+      <span><label class="checkbox"><input type="checkbox" id="transparentBg" checked/>透明背景</label></span>
+    </div>
+    <div style="padding: 0px 5px;">
+      <button onclick="render();">处理</button>
+      <button id="copycode"
+        data-clipboard-target=".syntaxhighlighter > table > tbody > tr > td.code > .container"><span>复制代码</span></button>
+    </div>
     <textarea id="code_source"
-      style="font-family:'Ubunto Mono', Consolas;margin:15px;max-height: 10rem;min-height: 10rem;max-width: 720px;min-width: 720px;">select * from dual;</textarea>
+      style="margin:15px;max-height: 10rem;min-height: 10rem;max-width: 720px;min-width: 720px;">select * from dual;</textarea>
     <div id="result_div" class="" style="margin:15px;max-height: 340px;">
     </div>
     <script>
@@ -129,7 +134,6 @@
       var transparentBgStyle = document.createElement('style');
       transparentBgStyle.id = 'transparent-bg-style';
       document.head.appendChild(transparentBgStyle);
-
       function updateTransparentBg(enable) {
           if (enable) {
               transparentBgStyle.innerHTML = `
@@ -144,6 +148,30 @@
           }
       }
 
+      // 处理字体
+      var fontFamilyBgStyle = document.createElement('style');
+      fontFamilyBgStyle.id = 'font-family-style';
+      document.head.appendChild(fontFamilyBgStyle);
+      function updateFontFamilyBg(fontType) {
+        if(! fontType){
+          fontType = $("#font_type > option")[0]?.value ||'system-ui';
+        }
+        var cssTxt = `body,
+            textarea,option,span,label,select,button,
+            .syntaxhighlighter a,
+            .syntaxhighlighter div,
+            .syntaxhighlighter code,
+            .syntaxhighlighter table,
+            .syntaxhighlighter table td,
+            .syntaxhighlighter table tr,
+            .syntaxhighlighter table tbody,
+            .syntaxhighlighter table thead,
+            .syntaxhighlighter table caption,
+            .syntaxhighlighter textarea {
+              font-family: ${fontType}, "Microsoft YaHei UI" !important;
+            }`;
+          fontFamilyBgStyle.innerHTML = cssTxt;
+      }
 
       // 语言选项 名称和值
       var codeStyleMapping = [
@@ -310,28 +338,39 @@
         if (jQuery.cookies.get("style_type")) {
           $("#style_type").val(jQuery.cookies.get("style_type"));
         }
-        
-        $("#transparentBg").prop('checked', jQuery.cookies.get("transparentBg") === "true").change(function() {
-            updateTransparentBg(this.checked);
-            jQuery.cookies.set("transparentBg", this.checked, cookieOptions);
-            render();
-        });
-        
-        updateTransparentBg(jQuery.cookies.get("transparentBg") === "true");
-        
+        if(jQuery.cookies.get("font_type")) {
+          $("#font_type").val(jQuery.cookies.get("font_type"));
+        }else{
+          updateFontFamilyBg(null);
+        }
+        if(jQuery.cookies.get("transparentBg")) {
+          $("#transparentBg").val(jQuery.cookies.get("transparentBg"));
+          updateTransparentBg(jQuery.cookies.get("transparentBg"));
+        }else{
+          updateTransparentBg(true);
+        }
+
         SyntaxHighlighter.all();
-        // $("#gutter").click(function () {
-        //   render();
-        // });
-        // $('#gutter').cookieBind();
+
         render();
       });
 
       $("#code_type").click(function () {
+        jQuery.cookies.set("lang_type", $(this).val(), cookieOptions);
         render();
       });
       $("#style_type").click(function () {
+        jQuery.cookies.set("style_type", $(this).val(), cookieOptions);
         change($(this).val());
+      });
+      $("#transparentBg").change(function() {
+          updateTransparentBg(this.checked);
+          jQuery.cookies.set("transparentBg", this.checked, cookieOptions);
+          render();
+      });
+      $("#font_type").change(function() {
+        jQuery.cookies.set("font_type", $(this).val(), cookieOptions);
+        updateFontFamilyBg($(this).val());
       });
 
       var REGX_HTML_ENCODE = /"|&|'|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g;
@@ -408,12 +447,9 @@
         $("#result_div").empty();
         $("#result_div").prepend("<pre>" + encodeHtml($("#code_source").val()) + "</pre>");
         var class_v = "brush :" + $("#code_type").val() + ";";
-        // if ("checked" != $("#gutter").attr("checked"))
         class_v = class_v + "gutter: true;";
         $("#result_div pre").addClass(class_v);
         SyntaxHighlighter.highlight();
-        jQuery.cookies.set("lang_type", $('#code_type').val(), cookieOptions);
-        jQuery.cookies.set("style_type", $('#style_type').val(), cookieOptions);
         $('.code .line').each(function (index) {
           var yqhg = new Number($(this).height());
           $('.gutter .line:eq(' + index + ')').attr('style', 'height:' + yqhg + 'px !important')

@@ -5,35 +5,21 @@
 
 	function Brush()
 	{
-		var funcs	=	'abs avg case cast coalesce convert count current_timestamp ' +
-						'current_user day isnull left lower month nullif replace right ' +
-						'session_user space substring sum system_user upper user year';
+		var dataType =	'int integer bigint smallint tinyint mediumint decimal numeric float real double bit boolean number binary_float binary_double serial char varchar varchar2 text tinytext mediumtext longtext nchar nvarchar2 clob nclob blob longblob raw long raw binary varbinary date time datetime timestamp year timestamp with time zone interval year to month json xmltype rowid urowid enum set geometry point linestring sdo_geometry bfile mediumblob float(p) double precision unsigned zerofill long';
 
-		var keywords =	'absolute action add after alter as asc at authorization begin bigint ' +
-						'binary bit by cascade char character check checkpoint close collate ' +
-						'column commit committed connect connection constraint contains continue ' +
-						'create cube current current_date current_time cursor database date ' +
-						'deallocate dec decimal declare default delete desc distinct double drop ' +
-						'dynamic else end end-exec escape except exec execute false fetch first ' +
-						'float for force foreign forward free from full function global goto grant ' +
-						'group grouping having hour ignore index inner insensitive insert instead ' +
-						'int integer intersect into is isolation key last level load local max min ' +
-						'minute modify move name national nchar next no numeric of off on only ' +
-						'open option order out output partial password precision prepare primary ' +
-						'prior privileges procedure public read real references relative repeatable ' +
-						'restrict return returns revoke rollback rollup rows rule schema scroll ' +
-						'second section select sequence serializable set size smallint static ' +
-						'statistics table temp temporary then time timestamp to top transaction ' +
-						'translation trigger true truncate uncommitted union unique update values ' +
-						'varchar varying view when where with work';
+		var funcs	=	'max min count concat substr length upper lower trim lpad rpad replace regexp_replace instr ascii chr nvl coalesce concat_ws format initcap left right reverse soundex abs round ceil floor mod power sqrt exp log ln sin cos tan rand trunc sign acos asin atan atan2 greatest least sum avg stddev variance median percentile_cont now sysdate current_date current_time current_timestamp extract date_add date_sub add_months months_between to_date to_char date_format date_trunc datediff timestampdiff last_day next_day cast convert to_number to_clob to_blob hex unhex bin_to_uuid uuid_to_bin case decode nvl2 nullif ifnull isnull iif row_number rank dense_rank lead lag first_value last_value ntile cume_dist percent_rank over partition_by json_extract json_value xmlagg xmlelement pg_sleep sys_context utl_inaddr getutcdate group_concat listagg string_agg array_agg stats_mode corr covar_pop md5 sha1 sha256 sha512 aes_encrypt aes_decrypt dbms_crypto pgp_sym_encrypt hashbytes st_geometrytype sdo_geometry st_distance st_intersects st_buffer st_union';
 
-		var operators =	'all and any between cross in join like not null or outer some';
+		var keywords =	'select insert update delete merge create alter drop truncate rename grant revoke commit rollback savepoint begin start transaction from where group by having order by limit fetch top offset as inner join left join right join full join cross join natural join primary key foreign key unique not null check default union union all case when then else distinct with over partition by explain window row_number rank json_extract match against comment and or not in between exists';
+
+		var operators =	'= <> != < > <= >= + - * / % ! ~ & | ^ << >> || -> ->> #> @> <@ :: ? ?| ?& like ilike rlike regexp is isnull is not null @ @@ <=> \ * % _ ~~ !~~';
 
 		this.regexList = [
 			{ regex: /--(.*)$/gm,												css: 'comments' },			// one line and multiline comments
 			{ regex: SyntaxHighlighter.regexLib.multiLineDoubleQuotedString,	css: 'string' },			// double quoted strings
 			{ regex: SyntaxHighlighter.regexLib.multiLineSingleQuotedString,	css: 'string' },			// single quoted strings
-			{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),				css: 'color2' },			// functions
+			{ regex: new RegExp(this.getKeywords(dataType), 'gmi'),				css: 'constants' },			// dataType
+			{ regex: /\(\d+\)/gm,				css: 'constants' },			// dataTypeLength
+			{ regex: new RegExp(this.getKeywords(funcs), 'gmi'),				css: 'functions' },			// functions
 			{ regex: new RegExp(this.getKeywords(operators), 'gmi'),			css: 'color1' },			// operators and such
 			{ regex: new RegExp(this.getKeywords(keywords), 'gmi'),				css: 'keyword' }			// keyword
 			];
