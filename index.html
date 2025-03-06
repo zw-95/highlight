@@ -1,37 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- This file is intended to be built using the instructions here: http://highlightjs.readthedocs.io/en/latest/building-testing.html#building -->
 
 <head>
   <meta charset="utf-8">
-  <title>highlight.js demo</title>
-
+  <title>highlight.js</title>
+  <!-- 基础依赖 -->
   <script type="text/javascript" src='js/jquery-3.6.0.min.js'></script>
   <script type="text/javascript" src='js/jquery.cookies.2.2.0.min.js'></script>
-  <link rel="stylesheet" href='css/bootstrap.min.css' />
-  <script src='js/bootstrap.min.js'></script>
-
-  <link id="css" rel="stylesheet" type="text/css" href="css/shCoreDefault.css" />
-  <script type="text/javascript" src="js/XRegExp.js"></script>
-  <script type="text/javascript" src="js/shCore.js"></script>
-  <script type="text/javascript" src="js/shBrushAll.js"></script>
   <script src="js/clipboard.min.js"></script>
+  <script src='js/bootstrap.min.js'></script>
+  <link rel="stylesheet" href='css/bootstrap.min.css' />
+
+  <!-- 其他依赖 -->
+  <script src="libs/html2canvas/html2canvas.min.js"></script>
+  <script src="libs/highlight.js/highlight.js"></script>
+  <link id="codeStyle" rel="stylesheet" href="libs/highlight.js/styles/default.min.css">
+
   <style>
     body {
       font-size: 1rem;
       font-family: system-ui, 'Microsoft YaHei UI';
     }
 
-    .syntaxhighlighter .line.alt2, .syntaxhighlighter .line.alt1{
+    .hljs-codeline {
+      background-color: inherit;
+    }
+
+    .content {
+      line-height: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .syntaxhighlighter .line.alt2,
+    .syntaxhighlighter .line.alt1 {
       background-color: transparent !important;
     }
-    .condtions{
+
+    .condtions {
       display: flex;
+      align-items: baseline;
       padding: 5px;
     }
-    .condtions > *{
+
+    .condtions>* {
       padding: 5px;
     }
+
+    label {
+      font-size: 1rem;
+    }
+
     textarea {
       border: 1px solid #e1e1e8;
       display: block;
@@ -43,32 +63,55 @@
       word-break: break-all;
       white-space: pre-wrap !important;
       overflow: auto;
-      max-width: 720px;
-      min-width: 720px;
-      font-size: 13px;
       color: #333;
+      line-height: normal;
+      max-width: 80%;
+      min-width: 50%;
+      max-height: 10rem;
+      min-height: 10rem;
     }
 
     #result_div {
-      border: 1px solid #e1e1e8;
       display: block;
       margin: 9px 0;
       border-radius: 5px;
       -webkit-border-radius: 5px;
       -moz-border-radius: 5px;
       overflow: auto;
-      max-width: 728px;
-      min-width: 728px;
-      font-size: 1rem;
+      max-width: 80%;
+      min-width: 50%;
+      max-height: calc(100vh - 18rem);
+      min-height: 10rem;
+      margin: 15px;
       color: #333;
     }
 
-    .code {
+    #font_size {
+      width: 8rem;
+    }
+
+    option {
+      font-size: 16px;
+    }
+
+    .code-language-tag {
+      text-align: center;
+    }
+
+    pre {
+      line-height: normal;
+      padding: 0px;
+      background-color: transparent;
+    }
+
+    code {
       word-break: break-all;
+      padding: 0px;
+      border-radius: 5px;
     }
 
     ::-webkit-scrollbar-track {
-      opacity: 0
+      opacity: 0;
     }
 
     ::-webkit-scrollbar {
@@ -85,47 +128,42 @@
 </head>
 
 <body>
-  <div class="">
+  <div class="content">
     <div class="condtions">
-      <span>语言</span>
-      <select id="code_type" class="span2">
-        <!-- 启动后加载 -->
-      </select>
-      <span>风格</span>
-      <select id="style_type" class="span2">
-        <option value="default">default</option>
-        <option value="emacs">emacs</option>
-        <option value="eclipse">eclipse</option>
-        <option value="django">django</option>
-        <option value="fadetogrey">fadetogrey</option>
-        <option value="mdultra">mdultra</option>
-        <option value="midnight">midnight</option>
-        <option value="rdark">rdark</option>
-      </select>
-      <span>字体</span>
-      <select id="font_type" class="span2">
-        <option value="Courier New">Courier New</option>
-        <option value="Consolas">Consolas</option>
-        <option value="Tahoma">Tahoma</option>
-        <option value="Verdana">Verdana</option>
-        <option value="Calibri">Calibri</option>
-        <option value="宋体">宋体</option>
-        <option value="微软雅黑">微软雅黑</option>
-        <option value="system-ui">system-ui</option>
-      </select>
-      <span><label class="checkbox"><input type="checkbox" id="transparentBg" checked/>透明背景</label></span>
+      <span><label>语言
+          <select id="lang_type" class="span2">
+            <!-- 启动后加载 -->
+          </select></label></span>
+      <span><label>风格
+          <select id="style_type" class="span2">
+            <!-- 启动后加载 -->
+          </select></label></span>
+      <span><label>字体
+          <select id="font_type" class="span2">
+            <!-- 启动后加载 -->
+          </select></label></span>
+      <span><label>字体大小:<span id="font_size_value"></span><input type="range" id="font_size" min="9" max="48"
+            value="16"></label></span>
+      <!-- <span><label>自定义字体:<input type="file" id="diy_font_type" accept=".ttf, .otf, .woff, .woff2"></label></span> -->
+      <span><label><input type="checkbox" id="transparent_type" />透明背景</label></span>
     </div>
     <div style="padding: 0px 5px;">
-      <button onclick="render();">处理</button>
-      <button id="copycode"
-        data-clipboard-target=".syntaxhighlighter > table > tbody > tr > td.code > .container"><span>复制代码</span></button>
+      <button onclick="render();">格式化</button>
+      <button id="copyAsHtml" data-clipboard-target="#result_div > pre > code">复制为Html</button>
+      <button id="copyAsImage" data-clipboard-target="#result_div > pre">复制为图片</button>
     </div>
-    <textarea id="code_source"
-      style="margin:15px;max-height: 10rem;min-height: 10rem;max-width: 720px;min-width: 720px;">select * from dual;</textarea>
-    <div id="result_div" class="" style="margin:15px;max-height: 340px;">
+    <textarea id="code_source">The quick brown fox jumps over the lazy dog. 1234567890
+      !@#$%^&*()_+-=[]{}|;:',.<>/?`~\\
+      ，。！？“”‘’（）【】《》—…·
+      
+      一二三四五六七八九十，春眠不觉晓，处处闻啼鸟.
+      あいうえお、がぎぐげご、かきくけこ、さしすせそ、たちつてと.
+      가나다라마, 바사아자차카타파하, ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊㅋㅌㅍㅎ.
+      
+      This is a sample text containing various characters and symbols to test font display.</textarea>
+    <div id="result_div">
     </div>
     <script>
-      // 参考这个网站 https://tool.oschina.net/highlight
       var cookieOptions = {
         hoursToLive: 30 * 24
       };
@@ -134,244 +172,183 @@
       var transparentBgStyle = document.createElement('style');
       transparentBgStyle.id = 'transparent-bg-style';
       document.head.appendChild(transparentBgStyle);
-      function updateTransparentBg(enable) {
-          if (enable) {
-              transparentBgStyle.innerHTML = `
-                  body { background-color: transparent !important; }
-                  .syntaxhighlighter,
-                  .syntaxhighlighter .line.alt2, 
-                  .syntaxhighlighter .line.alt1 {
-                      background-color: transparent !important;
-                  }`;
-          } else {
-              transparentBgStyle.innerHTML = '';
-          }
-      }
+
 
       // 处理字体
-      var fontFamilyBgStyle = document.createElement('style');
-      fontFamilyBgStyle.id = 'font-family-style';
-      document.head.appendChild(fontFamilyBgStyle);
-      function updateFontFamilyBg(fontType) {
-        if(! fontType){
-          fontType = $("#font_type > option")[0]?.value ||'system-ui';
-        }
-        var cssTxt = `body,
-            textarea,option,span,label,select,button,
-            .syntaxhighlighter a,
-            .syntaxhighlighter div,
-            .syntaxhighlighter code,
-            .syntaxhighlighter table,
-            .syntaxhighlighter table td,
-            .syntaxhighlighter table tr,
-            .syntaxhighlighter table tbody,
-            .syntaxhighlighter table thead,
-            .syntaxhighlighter table caption,
-            .syntaxhighlighter textarea {
-              font-family: ${fontType}, "Microsoft YaHei UI" !important;
-            }`;
-          fontFamilyBgStyle.innerHTML = cssTxt;
-      }
+      var fontFamilyStyle = document.createElement('style');
+      fontFamilyStyle.id = 'font-family-style';
+      document.head.appendChild(fontFamilyStyle);
+
+      // 处理字体大小
+      var fontSizeStyle = document.createElement('style');
+      fontSizeStyle.id = 'font-size-style';
+      document.head.appendChild(fontSizeStyle);
 
       // 语言选项 名称和值
-      var codeStyleMapping = [
-        {
-          "name": "actionscript3",
-          "value": "as3",
-          "list": [
-            "actionscript3",
-            "as3"
-          ]
-        },
-        {
-          "name": "applescript",
-          "value": "applescript",
-          "list": [
-            "applescript"
-          ]
-        },
-        {
-          "name": "bash/shell",
-          "value": "bash",
-          "list": [
-            "bash",
-            "shell"
-          ]
-        },
-        {
-          "name": "coldfusion",
-          "value": "cf",
-          "list": [
-            "coldfusion",
-            "cf"
-          ]
-        },
-        {
-          "name": "c/cpp",
-          "value": "cpp",
-          "list": ["cpp", "c"]
-        },
-        {
-          "name": "css",
-          "value": "css",
-          "list": ["css"]
+      var codeTypes = ['auto', '1c', 'abnf', 'accesslog', 'actionscript', 'ada', 'angelscript', 'apache', 'applescript', 'arcade', 'arduino', 'armasm', 'asciidoc', 'aspectj', 'autoit', 'avrasm', 'awk', 'axapta', 'bash', 'basic', 'bnf', 'brainfuck', 'c', 'cal', 'capnproto', 'ceylon', 'clean', 'clojure', 'clojure-repl', 'cmake', 'coffeescript', 'coq', 'cos', 'cpp', 'crmsh', 'crystal', 'csharp', 'csp', 'css', 'd', 'dart', 'delphi', 'diff', 'django', 'dns', 'dockerfile', 'dos', 'dsconfig', 'dts', 'dust', 'ebnf', 'elixir', 'elm', 'erb', 'erlang', 'erlang-repl', 'excel', 'fix', 'flix', 'fortran', 'fsharp', 'gams', 'gauss', 'gcode', 'gherkin', 'glsl', 'gml', 'go', 'golo', 'gradle', 'graphql', 'groovy', 'haml', 'handlebars', 'haskell', 'haxe', 'hsp', 'http', 'hy', 'inform7', 'ini', 'irpf90', 'isbl', 'java', 'javascript', 'jboss-cli', 'json', 'julia', 'julia-repl', 'kotlin', 'lasso', 'latex', 'ldif', 'leaf', 'less', 'lisp', 'livecodeserver', 'livescript', 'llvm', 'lsl', 'lua', 'makefile', 'markdown', 'mathematica', 'matlab', 'maxima', 'mel', 'mercury', 'min.js', 'mipsasm', 'mizar', 'mojolicious', 'monkey', 'moonscript', 'n1ql', 'nestedtext', 'nginx', 'nim', 'nix', 'node-repl', 'nsis', 'objectivec', 'ocaml', 'openscad', 'oxygene', 'parser3', 'perl', 'pf', 'pgsql', 'php', 'php-template', 'plaintext', 'pony', 'powershell', 'processing', 'profile', 'prolog', 'properties', 'protobuf', 'puppet', 'purebasic', 'python', 'python-repl', 'q', 'qml', 'r', 'reasonml', 'rib', 'roboconf', 'routeros', 'rsl', 'ruby', 'ruleslanguage', 'rust', 'sas', 'scala', 'scheme', 'scilab', 'scss', 'shell', 'smali', 'smalltalk', 'sml', 'sqf', 'sql', 'stan', 'stata', 'step21', 'stylus', 'subunit', 'swift', 'taggerscript', 'tap', 'tcl', 'thrift', 'tp', 'twig', 'typescript', 'vala', 'vbnet', 'vbscript', 'vbscript-html', 'verilog', 'vhdl', 'vim', 'wasm', 'wren', 'x86asm', 'xl', 'xml', 'xquery', 'yaml', 'zephir'];
 
-        },
-        {
-          "name": "delphi",
-          "value": "pas",
-          "list": ["delphi", "pascal", "pas"]
-        },
-        {
-          "name": "diff",
-          "value": "diff",
-          "list": ["diff", "patch"]
-        },
-        {
-          "name": "erlang",
-          "value": "erl",
-          "list": ["erl", "erlang"]
-        },
-        {
-          "name": "groovy",
-          "value": "groovy",
-          "list": ["groovy"]
-        },
-        {
-          "name": "java",
-          "value": "java",
-          "list": ["java"]
-        },
-        {
-          "name": "javafx",
-          "value": "jfx",
-          "list": ["jfx", "javafx"]
-        },
-        {
-          "name": "javascript/json",
-          "value": "js",
-          "list": ["js", "json", "jscript", "javascript"]
-        },
-        {
-          "name": "perl",
-          "value": "pl",
-          "list": ["perl", "Perl", "pl"]
-        },
-        {
-          "name": "php",
-          "value": "php",
-          "list": ["php"]
-        },
-        {
-          "name": "text",
-          "value": "text",
-          "list": ["text", "plain", "plaintext"]
-        },
-        {
-          "name": "powershell",
-          "value": "ps",
-          "list": ["powershell", "ps"]
-        },
-        {
-          "name": "python",
-          "value": "py",
-          "list": ["py", "python"]
-        },
-        {
-          "name": "ruby",
-          "value": "ruby",
-          "list": ["ruby", "rails", "ror", "rb", "r"]
-        },
-        {
-          "name": "scss",
-          "value": "scss",
-          "list": ["sass", "scss"]
-        },
-        {
-          "name": "scala",
-          "value": "scala",
-          "list": ["scala"]
-        },
-        {
-          "name": "vb",
-          "value": "vb",
-          "list": ["vb", "vbnet"]
-        },
-        {
-          "name": "xml/xhtml/html/xslt",
-          "value": "xml",
-          "list": ["xml", "xhtml", "xslt", "html"]
-        },
-        {
-          "name": "sql",
-          "value": "sql",
-          "list": ["sql"]
-        },
+      // 主题选项
+      var styleThemes = ['1c-light', '3024_base16', 'a11y-dark', 'a11y-light', 'agate', 'androidstudio', 'an-old-hope', 'apathy_base16', 'apprentice_base16', 'arduino-light', 'arta', 'ascetic', 'ashes_base16', 'atelier-cave_base16', 'atelier-cave-light_base16', 'atelier-dune_base16', 'atelier-dune-light_base16', 'atelier-estuary_base16', 'atelier-estuary-light_base16', 'atelier-forest_base16', 'atelier-forest-light_base16', 'atelier-heath_base16', 'atelier-heath-light_base16', 'atelier-lakeside_base16', 'atelier-lakeside-light_base16', 'atelier-plateau_base16', 'atelier-plateau-light_base16', 'atelier-savanna_base16', 'atelier-savanna-light_base16', 'atelier-seaside_base16', 'atelier-seaside-light_base16', 'atelier-sulphurpool_base16', 'atelier-sulphurpool-light_base16', 'atlas_base16', 'atom-one-dark', 'atom-one-dark-reasonable', 'atom-one-light', 'bespin_base16', 'black-metal_base16', 'black-metal-bathory_base16', 'black-metal-burzum_base16', 'black-metal-dark-funeral_base16', 'black-metal-gorgoroth_base16', 'black-metal-immortal_base16', 'black-metal-khold_base16', 'black-metal-marduk_base16', 'black-metal-mayhem_base16', 'black-metal-nile_base16', 'black-metal-venom_base16', 'brewer_base16', 'bright_base16', 'brogrammer_base16', 'brown-paper', 'brush-trees_base16', 'brush-trees-dark_base16', 'chalk_base16', 'circus_base16', 'classic-dark_base16', 'classic-light_base16', 'codepen-embed', 'codeschool_base16', 'color-brewer', 'colors_base16', 'cupcake_base16', 'cupertino_base16', 'danqing_base16', 'darcula_base16', 'dark', 'darkmoss_base16', 'darktooth_base16', 'dark-violet_base16', 'decaf_base16', 'default', 'default-dark_base16', 'default-light_base16', 'devibeans', 'dirtysea_base16', 'docco', 'dracula_base16', 'edge-dark_base16', 'edge-light_base16', 'eighties_base16', 'embers_base16', 'equilibrium-dark_base16', 'equilibrium-gray-dark_base16', 'equilibrium-gray-light_base16', 'equilibrium-light_base16', 'espresso_base16', 'eva_base16', 'eva-dim_base16', 'far', 'felipec', 'flat_base16', 'foundation', 'framer_base16', 'fruit-soda_base16', 'gigavolt_base16', 'github', 'github_base16', 'github-dark', 'github-dark-dimmed', 'gml', 'googlecode', 'google-dark_base16', 'google-light_base16', 'gradient-dark', 'gradient-light', 'grayscale', 'grayscale-dark_base16', 'grayscale-light_base16', 'green-screen_base16', 'gruvbox-dark-hard_base16', 'gruvbox-dark-medium_base16', 'gruvbox-dark-pale_base16', 'gruvbox-dark-soft_base16', 'gruvbox-light-hard_base16', 'gruvbox-light-medium_base16', 'gruvbox-light-soft_base16', 'hardcore_base16', 'harmonic16-dark_base16', 'harmonic16-light_base16', 'heetch-dark_base16', 'heetch-light_base16', 'helios_base16', 'hopscotch_base16', 'horizon-dark_base16', 'horizon-light_base16', 'humanoid-dark_base16', 'humanoid-light_base16', 'hybrid', 'ia-dark_base16', 'ia-light_base16', 'icy-dark_base16', 'idea', 'intellij-light', 'ir-black', 'ir-black_base16', 'isbl-editor-dark', 'isbl-editor-light', 'isotope_base16', 'kimber_base16', 'kimbie-dark', 'kimbie-light', 'lightfair', 'lioshi', 'london-tube_base16', 'macintosh_base16', 'magula', 'marrakesh_base16', 'materia_base16', 'material_base16', 'material-darker_base16', 'material-lighter_base16', 'material-palenight_base16', 'material-vivid_base16', 'mellow-purple_base16', 'mexico-light_base16', 'mocha_base16', 'mono-blue', 'monokai', 'monokai_base16', 'monokai-sublime', 'nebula_base16', 'night-owl', 'nnfx-dark', 'nnfx-light', 'nord', 'nord_base16', 'nova_base16', 'obsidian', 'ocean_base16', 'oceanicnext_base16', 'onedark_base16', 'one-light_base16', 'outrun-dark_base16', 'panda-syntax-dark', 'panda-syntax-light', 'papercolor-dark_base16', 'papercolor-light_base16', 'paraiso_base16', 'paraiso-dark', 'paraiso-light', 'pasque_base16', 'phd_base16', 'pico_base16', 'pojoaque', 'pop_base16', 'porple_base16', 'purebasic', 'qtcreator-dark', 'qtcreator-light', 'qualia_base16', 'railscasts_base16', 'rainbow', 'rebecca_base16', 'ros-pine_base16', 'ros-pine-dawn_base16', 'ros-pine-moon_base16', 'routeros', 'sagelight_base16', 'sandcastle_base16', 'school-book', 'seti-ui_base16', 'shades-of-purple', 'shapeshifter_base16', 'silk-dark_base16', 'silk-light_base16', 'snazzy_base16', 'solar-flare_base16', 'solar-flare-light_base16', 'solarized-dark_base16', 'solarized-light_base16', 'spacemacs_base16', 'srcery', 'stackoverflow-dark', 'stackoverflow-light', 'summercamp_base16', 'summerfruit-dark_base16', 'summerfruit-light_base16', 'sunburst', 'synth-midnight-terminal-dark.css_base16', 'synth-midnight-terminal-dark_base16', 'synth-midnight-terminal-light.css_base16', 'synth-midnight-terminal-light_base16', 'tango_base16', 'tender_base16', 'tokyo-night-dark', 'tokyo-night-light', 'tomorrow_base16', 'tomorrow-night_base16', 'tomorrow-night-blue', 'tomorrow-night-bright', 'twilight_base16', 'unikitty-dark_base16', 'unikitty-light_base16', 'vs', 'vs2015', 'vulcan_base16', 'windows-10_base16', 'windows-10-light_base16', 'windows-95_base16', 'windows-95-light_base16', 'windows-high-contrast_base16', 'windows-high-contrast-light_base16', 'windows-nt_base16', 'windows-nt-light_base16', 'woodland_base16', 'xcode', 'xcode-dusk_base16', 'xt256', 'zenburn_base16'
       ];
 
-      var clipboard = new ClipboardJS('#copycode');
+      // 字体类型
+      var fontTypes = {
+        'Courier New': 'Courier New',
+        'Consolas': 'Consolas',
+        'Tahoma': 'Tahoma',
+        'Verdana': 'Verdana',
+        'Calibri': 'Calibri',
+        '宋体': '宋体',
+        '微软雅黑': '微软雅黑',
+        '默认字体': 'system-ui',
+        'custom': '自定义字体'
+      };
+
+      var clipboard = new ClipboardJS('#copyAsHtml');
 
       $(document).ready(function () {
 
-        // 不能用这个方法，否则点击调用clipboard复制时，复制不成功
-        // document.body.oncopy = function () {
-        //   document.getElementById('copycode').click();
-        // }
+        //  监听 ctrl + c事件
+        $(document).unbind('keydown').bind('keydown', function (e) {
+          if (e.ctrlKey && e.keyCode == 67) {
+            document.getElementById('copyAsHtml').click();
+            // 返回false, 防止重复触发copy事件
+            return false;
+          }
+        });
 
-          //  监听 ctrl + c事件
-          $(document).unbind('keydown').bind('keydown', function (e) {
-            if (e.ctrlKey && e.keyCode == 67) {
-              document.getElementById('copycode').click();
-              // 返回false, 防止重复触发copy事件
-              return false;
-            }
-          });
-
-        var code_type = document.getElementById('code_type');
-        //添加一个选项
-        for (var i = 0; i < codeStyleMapping.length; i++) {
-          code_type.options.add(new Option(codeStyleMapping[i].name, codeStyleMapping[i].value));
+        // 初始化code类型选项
+        var lang_type = document.getElementById('lang_type');
+        for (var i = 0; i < codeTypes.length; i++) {
+          lang_type.options.add(new Option(codeTypes[i], codeTypes[i]));
         }
-        if (jQuery.cookies.get("lang_type")) {
-          $("#code_type").val(jQuery.cookies.get("lang_type"));
+        // 初始化code主题选项
+        var style_type = document.getElementById('style_type');
+        for (var i = 0; i < styleThemes.length; i++) {
+          style_type.options.add(new Option(styleThemes[i], styleThemes[i]));
         }
+        // 初始化字体选项字体样式
+        var font_type = document.getElementById('font_type');
+        $.each(fontTypes, function (key, value) {
+          var styleTxt = '';
+          if (key !== 'custom') {
+            styleTxt = `style="font-family:'${key}' !important"`;
+          }
+          var optionHtml = `<option class="font-options" ${styleTxt} value="${key}">` + encodeHtml(value) + "</option>";
+          $(font_type).append(optionHtml);
+        });
+        /*if (jQuery.cookies.get("lang_type")) {
+          $("#lang_type").val(jQuery.cookies.get("lang_type"));
+        }*/
         if (jQuery.cookies.get("style_type")) {
           $("#style_type").val(jQuery.cookies.get("style_type"));
         }
-        if(jQuery.cookies.get("font_type")) {
+        if (jQuery.cookies.get("font_type")) {
           $("#font_type").val(jQuery.cookies.get("font_type"));
-        }else{
-          updateFontFamilyBg(null);
         }
-        if(jQuery.cookies.get("transparentBg")) {
-          $("#transparentBg").val(jQuery.cookies.get("transparentBg"));
-          updateTransparentBg(jQuery.cookies.get("transparentBg"));
-        }else{
-          updateTransparentBg(true);
+        if (jQuery.cookies.get("font_size")) {
+          $("#font_size").val(jQuery.cookies.get("font_size"));
         }
-
-        SyntaxHighlighter.all();
+        if (jQuery.cookies.get("transparent_type")) {
+          $("#transparent_type").prop('checked', jQuery.cookies.get("transparent_type"));
+        }
+        changeCodeStyle($("#style_type").val());
+        updateFontFamilyBg($("#font_type").val());
+        updateFontSize($("#font_size").val());
+        updateTransparentBg($("#transparent_type").checked);
 
         render();
       });
 
-      $("#code_type").click(function () {
+      // 点击事件
+
+      $("#lang_type").click(function () {
         jQuery.cookies.set("lang_type", $(this).val(), cookieOptions);
         render();
       });
       $("#style_type").click(function () {
         jQuery.cookies.set("style_type", $(this).val(), cookieOptions);
-        change($(this).val());
+        changeCodeStyle($(this).val());
+        render();
       });
-      $("#transparentBg").change(function() {
-          updateTransparentBg(this.checked);
-          jQuery.cookies.set("transparentBg", this.checked, cookieOptions);
+      $("#transparent_type").change(function () {
+        jQuery.cookies.set("transparent_type", this.checked, cookieOptions);
+        updateTransparentBg(this.checked);
+        render();
+      });
+      $("#font_type").change(function () {
+        const selectedValue = $(this).val();
+
+        if (selectedValue === "custom") {
+          // 动态创建文件输入元素
+          const fileInput = document.createElement('input');
+          fileInput.type = 'file';
+          fileInput.accept = '.ttf, .otf, .woff, .woff2';
+          fileInput.style.display = 'none';
+
+          // 添加文件选择事件监听
+          fileInput.addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = function (e) {
+                const fontFace = new FontFace('customFont', e.target.result);
+                fontFace.load().then(loadedFace => {
+                  document.fonts.add(loadedFace);
+                  // 更新字体显示并保持下拉框状态
+                  $("#font_type").val("custom");
+                  updateFontFamilyBg("customFont");
+                  render();
+                });
+              };
+              reader.readAsArrayBuffer(file);
+            }
+            // 清理临时创建的input元素
+            document.body.removeChild(fileInput);
+          });
+
+          // 触发文件选择对话框
+          document.body.appendChild(fileInput); // 临时添加到DOM
+          fileInput.click();
+        } else {
+          // 常规字体处理
+          jQuery.cookies.set("font_type", selectedValue, cookieOptions);
+          updateFontFamilyBg(selectedValue);
           render();
+        }
       });
-      $("#font_type").change(function() {
-        jQuery.cookies.set("font_type", $(this).val(), cookieOptions);
-        updateFontFamilyBg($(this).val());
+      $("#font_size").on('input', function () {
+        jQuery.cookies.set("font_size", $(this).val(), cookieOptions);
+        updateFontSize($(this).val())
       });
+
+      $('#copyAsImage').on('click', async function () {
+        // 获取目标元素
+        const targetId = $(this).data('clipboard-target');
+        const element = document.querySelector(targetId);
+
+        // 调用 getImage 函数获取 canvas 对象
+        const canvas = await getImage(element);
+
+        // 将 canvas 转换为 Blob 并写入剪贴板
+        canvas.toBlob(async (blob) => {
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              [blob.type]: blob
+            })
+          ]);
+
+          // 更新按钮文本和样式以提示用户
+          const originalText = $(this).text();
+          $(this).text("复制成功").css("color", "green");
+
+          setTimeout(() => {
+            $(this).css("color", "").text(originalText);
+          }, 1000);
+        }, 'image/png');
+      });
+
+      // 函数
 
       var REGX_HTML_ENCODE = /"|&|'|<|>|[\x00-\x20]|[\x7F-\xFF]|[\u0100-\u2700]/g;
 
@@ -386,54 +363,81 @@
             });
       }
 
-      function changeCode(str, codeStyle) {
-        $("#code_source").html(str);
-        if (codeStyle != undefined && codeStyle != null) {
-          changeLanguage(codeStyle);
-        }
-        render();
-      }
-
+      // 更新代码语言
       function changeLanguage(str) {
         for (var i = 0; i < codeStyleMapping.length; i++) {
           if (codeStyleMapping[i].list.includes(str)) {
-            $("#code_type").val(codeStyleMapping[i].value);
+            $("#lang_type").val(codeStyleMapping[i].value);
             return;
           }
         }
-        $("#code_type").val('text');
-      }
-      function change(type) {    //更改样式
-        var css = document.getElementById("css");
-        if ("default" == type)
-          css.setAttribute("href", "css/shCoreDefault.css");
-        if ("emacs" == type)
-          css.setAttribute("href", "css/shCoreEmacs.css");
-        if ("django" == type)
-          css.setAttribute("href", "css/shCoreDjango.css");
-        if ("eclipse" == type)
-          css.setAttribute("href", "css/shCoreEclipse.css");
-        if ("fadetogrey" == type)
-          css.setAttribute("href", "css/shCoreFadeToGrey.css");
-        if ("mdultra" == type)
-          css.setAttribute("href", "css/shCoreMDUltra.css");
-        if ("midnight" == type)
-          css.setAttribute("href", "css/shCoreMidnight.css");
-        if ("rdark" == type)
-          css.setAttribute("href", "css/shCoreRDark.css");
-        render();
+        $("#lang_type").val('text');
       }
 
-      clipboard.on('success', function (e) {
-        var btnChild = document.querySelector("#copycode > span");
-        var btnChildText = btnChild.innerText;
+      // 更改代码主题
+      function changeCodeStyle(type) {
+        var css = document.getElementById("codeStyle");
+        css.setAttribute("href", `libs/highlight.js/styles/${type}.min.css`);
+      }
 
-        btnChild.innerText = "复制成功";
-        btnChild.style = "color:green"
+      // 更新是否透明背景
+      function updateTransparentBg(enable) {
+        if (enable) {
+          transparentBgStyle.innerHTML = `body, pre, code, .hljs, .hljs *{background-color: transparent !important;}`;
+        } else {
+          transparentBgStyle.innerHTML = '';
+        }
+      }
+
+      // 更新字体
+      function updateFontFamilyBg(fontType) {
+        if (!fontType) {
+          fontType = $("#font_type > option")[0]?.value || 'system-ui';
+        }
+        var cssTxt = `textarea, code, pre {
+              font-family: ${fontType}, Microsoft YaHei UI !important;
+            }`;
+        fontFamilyStyle.innerHTML = cssTxt;
+      }
+
+      function updateFontSize(fontSize) {
+        if (!fontSize) {
+          fontSize = '16px';
+        }
+        var cssTxt = `textarea, code, pre {
+              font-size: ${fontSize}px !important;
+            }`;
+        fontSizeStyle.innerHTML = cssTxt;
+        $('#font_size_value').text(fontSize + 'px');
+      }
+
+      // 复制图片
+      async function getImage(element) {
+        try {
+          // 使用 html2canvas 生成图片
+          const canvas = await html2canvas(element, {
+            useCORS: true,
+            logging: false,
+            backgroundColor: null
+          });
+
+          return canvas;
+        } catch (err) {
+          console.error('生成图片失败:', err);
+        }
+      }
+
+      // 复制Html
+      clipboard.on('success', async function (e) {
+        var $btnChild = $(e.trigger);
+        var btnChildText = $btnChild.text();
+
+        $btnChild.text("复制成功").css("color", "green");
+
         setTimeout(() => {
-          btnChild.style = "";
-          btnChild.innerText = "点击复制";
+          $btnChild.text(btnChildText);
         }, 1000);
+
         e.clearSelection();
       });
 
@@ -445,14 +449,47 @@
 
       function render() {
         $("#result_div").empty();
-        $("#result_div").prepend("<pre>" + encodeHtml($("#code_source").val()) + "</pre>");
-        var class_v = "brush :" + $("#code_type").val() + ";";
-        class_v = class_v + "gutter: true;";
-        $("#result_div pre").addClass(class_v);
-        SyntaxHighlighter.highlight();
-        $('.code .line').each(function (index) {
-          var yqhg = new Number($(this).height());
-          $('.gutter .line:eq(' + index + ')').attr('style', 'height:' + yqhg + 'px !important')
+        $("#result_div").append("<pre><code class=''><div>" + encodeHtml($("#code_source").val()) + "</div></code></pre>");
+        if ($("#lang_type").val() !== 'auto') {
+          var class_v = "language-" + $("#lang_type").val() + "";
+          $("#result_div pre code").addClass(class_v);
+        }
+        hljs.highlightAll();
+
+        $('code[class*="language-"]').each(function () {
+          // 提取语言名称
+          const langClass = $(this).attr('class').split(' ').find(c => c.startsWith('language-'));
+          const language = langClass ? langClass.split('-')[1] : 'code';
+
+          // 创建标签
+          const $tag = $('<div>')
+            .addClass('code-language-tag')
+            .text('检测为：' + language.toUpperCase())
+            .css({
+              'margin-bottom': '-1px',
+              'z-index': 1
+            });
+
+          // 插入标签
+          if ($(this).parent('pre').length) {
+            $(this).parent('pre').before($tag);
+          } else {
+            $(this).before($tag);
+          }
+        });
+
+        // 修复div换行问题
+        $('code').html((i, html) => {
+          const lines = html.split(/\r?\n/);
+          return lines
+            .map((line, index) => {
+              // const isSingleLine = false;
+              const isSingleLine = lines.length === 1 && line.trim() !== '';
+              return isSingleLine
+                ? `<div>${line}</div>`
+                : `<div class="hljs-codeline">${line}</div>`;
+            })
+            .join('');
         });
       }
 
