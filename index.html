@@ -752,6 +752,8 @@ This is a sample text containing various characters and symbols to test font dis
       if (!type) type = 'googlecode';
       var css = $('codeStyle');
       css.setAttribute('href', 'libs/highlight.js/styles/' + type + '.min.css');
+      // Preload theme CSS for copy HTML (bypasses file:// CORS restriction)
+      loadThemeCss(type);
     }
 
     function updateFontFamily(fontType) {
@@ -846,43 +848,64 @@ This is a sample text containing various characters and symbols to test font dis
     }
 
     /* ===== Copy HTML (rich text) ===== */
-    function getHljsCssRules() {
-      var cssText = '';
-      for (var i = 0; i < document.styleSheets.length; i++) {
-        var sheet = document.styleSheets[i];
-        try {
-          var rules = sheet.cssRules || sheet.rules;
-          if (rules) {
-            for (var j = 0; j < rules.length; j++) {
-              var t = rules[j].cssText;
-              if (t && t.indexOf('hljs') !== -1) {
-                cssText += t + '\n';
-              }
-            }
-          }
-        } catch (e) {}
+    var cachedThemeCss = '';
+
+    // Load theme CSS file via XHR (bypasses file:// CORS restriction on cssRules)
+    function loadThemeCss(themeName, callback) {
+      if (!themeName) themeName = 'googlecode';
+      var cssUrl = 'libs/highlight.js/styles/' + themeName + '.min.css';
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', cssUrl, true);
+      xhr.onload = function() {
+        if (xhr.status === 200 || xhr.status === 0) {
+          cachedThemeCss = xhr.responseText;
+        } else {
+          cachedThemeCss = '';
+        }
+        if (callback) callback();
+      };
+      xhr.onerror = function() {
+        cachedThemeCss = '';
+        if (callback) callback();
+      };
+      try { xhr.send(); } catch(e) {
+        cachedThemeCss = '';
+        if (callback) callback();
       }
-      return cssText;
     }
 
-    function inlineAllComputedStyles(source, target) {
+    // Comprehensive inline styles fallback: deep-clone all visual computed styles
+    function deepInlineStyles(source, target) {
       if (source.nodeType !== 1) return;
       var computed = window.getComputedStyle(source);
-      var props = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration'];
+      var props = [
+        'color', 'background-color', 'background', 'font-family', 'font-size',
+        'font-weight', 'font-style', 'font-variant', 'text-decoration', 'text-decoration-color',
+        'text-decoration-style', 'text-shadow', 'text-transform', 'text-align',
+        'line-height', 'letter-spacing', 'word-spacing', 'white-space',
+        'word-break', 'word-wrap', 'overflow-wrap', 'display', 'visibility',
+        'opacity', 'vertical-align', 'border', 'border-radius',
+        'box-shadow', 'outline', 'text-overflow'
+      ];
       var styleStr = '';
       for (var i = 0; i < props.length; i++) {
         var val = computed.getPropertyValue(props[i]);
-        if (val && val !== 'initial' && val !== 'normal') {
-          styleStr += props[i] + ':' + val + ';';
-        }
+        if (!val) continue;
+        if (val === 'initial' || val === 'normal' || val === 'none' ||
+            val === 'auto' || val === 'rgba(0, 0, 0, 0)' || val === '0px') continue;
+        // Skip default/inherited values that won't affect visual appearance
+        if (props[i] === 'font-weight' && val === '400') continue;
+        if (props[i] === 'font-style' && val === 'normal') continue;
+        styleStr += props[i] + ':' + val + ';';
       }
       if (styleStr) {
-        target.setAttribute('style', styleStr);
+        var existing = target.getAttribute('style') || '';
+        target.setAttribute('style', existing + styleStr);
       }
-      var sourceChildren = source.children;
-      var targetChildren = target.children;
-      for (var i = 0; i < sourceChildren.length && i < targetChildren.length; i++) {
-        inlineAllComputedStyles(sourceChildren[i], targetChildren[i]);
+      var srcKids = source.children;
+      var tgtKids = target.children;
+      for (var i = 0; i < srcKids.length && i < tgtKids.length; i++) {
+        deepInlineStyles(srcKids[i], tgtKids[i]);
       }
     }
 
@@ -893,38 +916,36 @@ This is a sample text containing various characters and symbols to test font dis
 
       var clone = pre.cloneNode(true);
 
-      // Collect hljs theme CSS rules
-      var cssText = getHljsCssRules();
-      var hasCssRules = cssText.length > 0;
-
-      // Add font settings
+      // Font settings
       var fontVal = $('font_type').value;
       var fontFamily = (fontVal === 'custom') ? 'customFont' : (fontVal === '默认字体' ? 'system-ui' : "'" + fontVal + "'");
       var fontSize = $('font_size').value;
-      cssText += 'pre,code,.hljs{font-family:' + fontFamily + ',"Microsoft YaHei UI"!important;font-size:' + fontSize + 'px!important;line-height:1.5!important}';
+      var baseCss = 'pre,code,.hljs{font-family:' + fontFamily + ',"Microsoft YaHei UI"!important;font-size:' + fontSize + 'px!important;line-height:1.5!important;white-space:pre-wrap!important;word-break:break-all!important}';
 
-      // Handle background
+      // Background
       if (transparentBg) {
-        cssText += 'pre,code,.hljs,.hljs *{background-color:transparent!important}';
+        baseCss += 'pre,code,.hljs,.hljs *{background-color:transparent!important}';
       } else {
-        // Explicitly add computed background as safety net (works even if CSS rules fail to load)
         var hljsEl = pre.querySelector('.hljs') || pre;
-        var computed = window.getComputedStyle(hljsEl);
-        var bg = computed.backgroundColor;
+        var bg = window.getComputedStyle(hljsEl).backgroundColor;
         if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') {
           bg = '#FFFFFF';
         }
-        cssText += '.hljs{background-color:' + bg + '!important}';
+        baseCss += '.hljs{background-color:' + bg + '!important}';
       }
 
-      // If CSS rules weren't accessible (e.g. file:// CORS), inline all computed styles on clone
-      if (!hasCssRules) {
-        inlineAllComputedStyles(pre, clone);
+      // Build rich HTML: prefer cached theme CSS, fallback to inlined computed styles
+      var fullCss, richHtml;
+      if (cachedThemeCss) {
+        fullCss = cachedThemeCss + '\n' + baseCss;
+      } else {
+        // Inline all computed styles directly on clone (comprehensive, Word-compatible)
+        deepInlineStyles(pre, clone);
+        fullCss = baseCss;
       }
+      richHtml = '<meta charset="utf-8"><style>' + fullCss + '</style>' + clone.outerHTML;
 
-      var richHtml = '<meta charset="utf-8"><style>' + cssText + '</style>' + clone.outerHTML;
-
-      // Try modern Clipboard API (text/html = rich text)
+      // Clipboard API
       if (navigator.clipboard && navigator.clipboard.write && typeof ClipboardItem !== 'undefined') {
         try {
           var clipboardItem = new ClipboardItem({
